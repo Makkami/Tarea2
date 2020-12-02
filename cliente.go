@@ -53,7 +53,7 @@ func SubirLibro(op_algo string) {
 
 	// Conexion a NameNode para obtener titulos de libros subidos
 	var connNN *grpc.ClientConn
-	connNN, errNN := grpc.Dial(ports[0], grpc.WithInsecure())
+	connNN, errNN := grpc.Dial("dist140:9004", grpc.WithInsecure())
 	if errNN != nil {
 		fmt.Printf("No se pudo conectar al NameNode:  %s", errNN)
 	}
