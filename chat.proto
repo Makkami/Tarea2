@@ -1,0 +1,49 @@
+syntax = "proto3";
+package chat;
+
+message Message {
+    string body = 1;
+    
+}
+message Chunk {
+    string nombre = 1;
+    string parte = 2;
+    uint64 numPartes =3;
+    bytes buffer = 4;
+    string Port = 5;
+    string Algo = 6;
+    
+}
+message PropuestaRespuesta{
+    string Nombre = 1;
+    string Total = 2;
+    string nd1 = 3;
+    string nd2 = 4;
+    string nd3 = 5;
+    string intn1 = 6;
+    string intn2 = 7;
+    string intn3 = 8;
+}
+
+message Biblioteca{
+    string largo =1;
+    string libros =2;
+}
+
+message Propuesta{
+    string nd1 = 3;
+    string nd2 = 4;
+    string nd3 = 5;
+    string intn1 = 6;
+    string intn2 = 7;
+    string intn3 = 8;
+}
+
+service ChatService {
+    rpc ChunkClienteANodo(Chunk) returns (Message){}
+    rpc AceptarPropuesta(PropuestaRespuesta) returns (PropuestaRespuesta) {}
+    rpc EnviarChunksEntreNodos(Chunk) returns (Message) {}
+    rpc PedirBiblioteca(Message) returns (Biblioteca){}
+    rpc LogChunks(Message) returns (Biblioteca){}
+    rpc TraerChunk(Message) returns (Message) {}
+}
