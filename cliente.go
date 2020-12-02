@@ -83,7 +83,6 @@ func SubirLibro(op_algo string) {
 	var conn *grpc.ClientConn
 	conn, err := grpc.Dial(ports[0], grpc.WithInsecure())
 	if err != nil {
-		flag1 = false
 		fmt.Printf("No se pudo conectar al DataNode 1:  %s", err)
 	}
 	c := chat.NewChatServiceClient(conn)
@@ -94,7 +93,6 @@ func SubirLibro(op_algo string) {
 	var conn2 *grpc.ClientConn
 	conn2, err2 := grpc.Dial(ports[1], grpc.WithInsecure())
 	if err2 != nil {
-		flag2 = false
 		fmt.Printf("No se pudo conectar al DataNode 2:  %s", err2)
 	}
 	c2 := chat.NewChatServiceClient(conn2)
@@ -105,13 +103,32 @@ func SubirLibro(op_algo string) {
 	var conn3 *grpc.ClientConn
 	conn3, err3 := grpc.Dial(ports[2], grpc.WithInsecure())
 	if err3 != nil {
-		flag3 = false
 		fmt.Printf("No se pudo conectar al DataNode 3:  %s", err3)
 	}
 	c3 := chat.NewChatServiceClient(conn3)
 
 	defer conn3.Close()
 
+	//Estado DataNodes
+	pregunta := chat.Message {
+		Body: "Estado",
+	}
+
+	_, error1 := c.Estado(context.Background(), &pregunta)
+	_, error2 := c2.Estado(context.Background(), &pregunta)
+	_, error3 := c3.Estado(context.Background(), &pregunta)
+	if error1 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 1")
+		flag1 = false
+	}
+	if error2 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 2")
+		flag2 = false
+	}
+	if error3 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 3")
+		flag3 = false
+	}
 
 	//Elegir Datanode random
 	sliceDN := []int{1,2,3}
@@ -124,6 +141,7 @@ func SubirLibro(op_algo string) {
 	} else if !flag1 {sliceDN = []int{2,3}
 	} else if !flag2 {sliceDN = []int{1,3}
 	} else if !flag3 {sliceDN = []int{1,2}}
+	fmt.Println("Lista de nodos activos: ", sliceDN)
 	
 	rand.Seed(time.Now().UnixNano())
 	rdIndex := rand.Intn(len(sliceDN))
@@ -266,19 +284,46 @@ func DescargarLibro(){
 	c3 := chat.NewChatServiceClient(conn3)
 	defer conn3.Close()
 
+	//Estado DataNodes
+	flag1, flag2, flag3 := true, true, true
+	pregunta := chat.Message {
+		Body: "Estado",
+	}
+
+	_, error1 := c.Estado(context.Background(), &pregunta)
+	_, error2 := c2.Estado(context.Background(), &pregunta)
+	_, error3 := c3.Estado(context.Background(), &pregunta)
+	if error1 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 1")
+		flag1 = false
+	}
+	if error2 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 2")
+		flag2 = false
+	}
+	if error3 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 3")
+		flag3 = false
+	}
+
+	if !flag1 || !flag2 || !flag3 {
+		fmt.Println("Todos los DataNodes deben estar arriba para la descarga de libros")
+		return
+	}
+
 	// Iterar por cada chunk del libro
 	for i := 0; i < len(listaPartes); i++ {
 		aux := strings.Split(listaPartes[i], " ")
 		nombreparte := chat.Message{
 			Body: aux[0],
 		}
-		if aux[1] == ":9001" {
+		if aux[1] == "dist137:9001" {
 			res1, _ := c1.TraerChunk(context.Background(), &nombreparte)
 			fmt.Println(res1)
-		}else if aux[1] == ":9002" {
+		}else if aux[1] == "dist138:9002" {
 			res2, _ := c2.TraerChunk(context.Background(), &nombreparte)
 			fmt.Println(res2)
-		}else if aux[1] == ":9003" {
+		}else if aux[1] == "dist139:9003" {
 			res3, _ := c3.TraerChunk(context.Background(), &nombreparte)
 			fmt.Println(res3)
 		}

@@ -447,7 +447,7 @@ var file_chat_proto_rawDesc = []byte{
 	0x01, 0x28, 0x09, 0x52, 0x05, 0x69, 0x6e, 0x74, 0x6e, 0x31, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e,
 	0x74, 0x6e, 0x32, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x69, 0x6e, 0x74, 0x6e, 0x32,
 	0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e, 0x74, 0x6e, 0x33, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x05, 0x69, 0x6e, 0x74, 0x6e, 0x33, 0x32, 0xd6, 0x02, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x74, 0x53,
+	0x05, 0x69, 0x6e, 0x74, 0x6e, 0x33, 0x32, 0x80, 0x03, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x74, 0x53,
 	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x31, 0x0a, 0x11, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x43,
 	0x6c, 0x69, 0x65, 0x6e, 0x74, 0x65, 0x41, 0x4e, 0x6f, 0x64, 0x6f, 0x12, 0x0b, 0x2e, 0x63, 0x68,
 	0x61, 0x74, 0x2e, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x1a, 0x0d, 0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e,
@@ -468,8 +468,11 @@ var file_chat_proto_rawDesc = []byte{
 	0x63, 0x68, 0x61, 0x74, 0x2e, 0x42, 0x69, 0x62, 0x6c, 0x69, 0x6f, 0x74, 0x65, 0x63, 0x61, 0x22,
 	0x00, 0x12, 0x2c, 0x0a, 0x0a, 0x54, 0x72, 0x61, 0x65, 0x72, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x12,
 	0x0d, 0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x0d,
-	0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x12,
+	0x28, 0x0a, 0x06, 0x45, 0x73, 0x74, 0x61, 0x64, 0x6f, 0x12, 0x0d, 0x2e, 0x63, 0x68, 0x61, 0x74,
+	0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x0d, 0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -499,14 +502,16 @@ var file_chat_proto_depIdxs = []int32{
 	0, // 3: chat.ChatService.PedirBiblioteca:input_type -> chat.Message
 	0, // 4: chat.ChatService.LogChunks:input_type -> chat.Message
 	0, // 5: chat.ChatService.TraerChunk:input_type -> chat.Message
-	0, // 6: chat.ChatService.ChunkClienteANodo:output_type -> chat.Message
-	2, // 7: chat.ChatService.AceptarPropuesta:output_type -> chat.PropuestaRespuesta
-	0, // 8: chat.ChatService.EnviarChunksEntreNodos:output_type -> chat.Message
-	3, // 9: chat.ChatService.PedirBiblioteca:output_type -> chat.Biblioteca
-	3, // 10: chat.ChatService.LogChunks:output_type -> chat.Biblioteca
-	0, // 11: chat.ChatService.TraerChunk:output_type -> chat.Message
-	6, // [6:12] is the sub-list for method output_type
-	0, // [0:6] is the sub-list for method input_type
+	0, // 6: chat.ChatService.Estado:input_type -> chat.Message
+	0, // 7: chat.ChatService.ChunkClienteANodo:output_type -> chat.Message
+	2, // 8: chat.ChatService.AceptarPropuesta:output_type -> chat.PropuestaRespuesta
+	0, // 9: chat.ChatService.EnviarChunksEntreNodos:output_type -> chat.Message
+	3, // 10: chat.ChatService.PedirBiblioteca:output_type -> chat.Biblioteca
+	3, // 11: chat.ChatService.LogChunks:output_type -> chat.Biblioteca
+	0, // 12: chat.ChatService.TraerChunk:output_type -> chat.Message
+	0, // 13: chat.ChatService.Estado:output_type -> chat.Message
+	7, // [7:14] is the sub-list for method output_type
+	0, // [0:7] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -617,6 +622,7 @@ type ChatServiceClient interface {
 	PedirBiblioteca(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Biblioteca, error)
 	LogChunks(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Biblioteca, error)
 	TraerChunk(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+	Estado(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
 }
 
 type chatServiceClient struct {
@@ -681,6 +687,15 @@ func (c *chatServiceClient) TraerChunk(ctx context.Context, in *Message, opts ..
 	return out, nil
 }
 
+func (c *chatServiceClient) Estado(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/chat.ChatService/Estado", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChatServiceServer is the server API for ChatService service.
 type ChatServiceServer interface {
 	ChunkClienteANodo(context.Context, *Chunk) (*Message, error)
@@ -689,6 +704,7 @@ type ChatServiceServer interface {
 	PedirBiblioteca(context.Context, *Message) (*Biblioteca, error)
 	LogChunks(context.Context, *Message) (*Biblioteca, error)
 	TraerChunk(context.Context, *Message) (*Message, error)
+	Estado(context.Context, *Message) (*Message, error)
 }
 
 // UnimplementedChatServiceServer can be embedded to have forward compatible implementations.
@@ -712,6 +728,9 @@ func (*UnimplementedChatServiceServer) LogChunks(context.Context, *Message) (*Bi
 }
 func (*UnimplementedChatServiceServer) TraerChunk(context.Context, *Message) (*Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TraerChunk not implemented")
+}
+func (*UnimplementedChatServiceServer) Estado(context.Context, *Message) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Estado not implemented")
 }
 
 func RegisterChatServiceServer(s *grpc.Server, srv ChatServiceServer) {
@@ -826,6 +845,24 @@ func _ChatService_TraerChunk_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChatService_Estado_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).Estado(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chat.ChatService/Estado",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).Estado(ctx, req.(*Message))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _ChatService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "chat.ChatService",
 	HandlerType: (*ChatServiceServer)(nil),
@@ -853,6 +890,10 @@ var _ChatService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TraerChunk",
 			Handler:    _ChatService_TraerChunk_Handler,
+		},
+		{
+			MethodName: "Estado",
+			Handler:    _ChatService_Estado_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

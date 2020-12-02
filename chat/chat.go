@@ -70,14 +70,14 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 				Intn2: res.Intn2,
 				Intn3: res.Intn3,
 			}
-			
+			/*
 			fmt.Printf("Lista nd1: %s\n", res2.Nd1)
-			fmt.Printf("Lista nd1: %s\n", res2.Nd2)
-			fmt.Printf("Lista nd1: %s\n", res2.Nd3)
+			fmt.Printf("Lista nd2: %s\n", res2.Nd2)
+			fmt.Printf("Lista nd3: %s\n", res2.Nd3)
 			fmt.Printf("Largo lista nd1: %s\n", res2.Intn1)
-			fmt.Printf("Largo lista nd1: %s\n", res2.Intn2)
-			fmt.Printf("Largo lista nd1: %s\n", res2.Intn3)
-			
+			fmt.Printf("Largo lista nd2: %s\n", res2.Intn2)
+			fmt.Printf("Largo lista nd3: %s\n", res2.Intn3)
+			*/
 			var conn *grpc.ClientConn
 			conn, err := grpc.Dial("dist140:9004", grpc.WithInsecure())
 			if err != nil {
@@ -87,7 +87,6 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 			defer conn.Close()
 
 			prop, _ := c.AceptarPropuesta(context.Background(), &res2)
-			fmt.Println(prop.Nombre)
 			response, _ := RepartirChunks(prop)
 			fmt.Println(response)
 
@@ -112,21 +111,21 @@ func propuestaDataNode(total int) Propuesta {
 		} else {
 			break
 		}
-		fmt.Println(i)
+		//fmt.Println(i)
 		if i < total {
 			lista2 = append(lista2, i) //[1][4][][]
 			i++
 		} else {
 			break
 		}
-		fmt.Println(i)
+		//fmt.Println(i)
 		if i < total {
 			lista3 = append(lista3, i) //[2][][][]
 			i++
 		} else {
 			break
 		}
-		fmt.Println(i)
+		//fmt.Println(i)
 
 	}
 	largo1 := strconv.Itoa(len(lista1))
@@ -150,24 +149,56 @@ func propuesta(total int) Propuesta {
 	flag1 := true
 	flag2 := true
 	flag3 := true
-	conn2, err := grpc.Dial("dist137:9001", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Error: %s", err)
+
+	var conn1 *grpc.ClientConn
+	conn1, err1 := grpc.Dial("dist137:9001", grpc.WithInsecure())
+	if err1 != nil {
+		fmt.Printf("No se pudo conectar al DataNode 1:  %s", err1)
+	}
+	c1 := NewChatServiceClient(conn1)
+
+	defer conn1.Close()
+
+		// Datanode 2
+	var conn2 *grpc.ClientConn
+	conn2, err2 := grpc.Dial("dist138:9002", grpc.WithInsecure())
+	if err2 != nil {
+		fmt.Printf("No se pudo conectar al DataNode 2:  %s", err2)
+	}
+	c2 := NewChatServiceClient(conn2)
+
+	defer conn2.Close()
+
+		// Datanode 3
+	var conn3 *grpc.ClientConn
+	conn3, err3 := grpc.Dial("dist139:9003", grpc.WithInsecure())
+	if err3 != nil {
+		fmt.Printf("No se pudo conectar al DataNode 3:  %s", err3)
+	}
+	c3 := NewChatServiceClient(conn3)
+
+	defer conn3.Close()
+
+	//Estado DataNodes
+	pregunta := Message {
+		Body: "Estado",
+	}
+
+	_, error1 := c1.Estado(context.Background(), &pregunta)
+	_, error2 := c2.Estado(context.Background(), &pregunta)
+	_, error3 := c3.Estado(context.Background(), &pregunta)
+	if error1 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 1")
 		flag1 = false
 	}
-	conn2.Close()
-	conn2, err = grpc.Dial("dist138:9002", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Error: %s", err)
+	if error2 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 2")
 		flag2 = false
 	}
-	conn2.Close()
-	conn2, err = grpc.Dial("dist139:9003", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Error: %s", err)
+	if error3 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 3")
 		flag3 = false
 	}
-	conn2.Close()
 	var lista1 []int
 	var lista2 []int
 	var lista3 []int
@@ -231,9 +262,6 @@ func escribirLog(log PropuestaRespuesta) {
 	listan1 := strings.SplitN(log.Nd1, "@", largo1)
 	listan2 := strings.SplitN(log.Nd2, "@", largo2)
 	listan3 := strings.SplitN(log.Nd3, "@", largo3)
-	fmt.Println(largo1)
-	fmt.Println(largo2)
-	fmt.Println(largo3)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -242,15 +270,15 @@ func escribirLog(log PropuestaRespuesta) {
 	fmt.Fprintf(file, "%s %s\n", Titulo, total)
 
 	for i := 0; i < largo1; i++ {
-		fmt.Fprintf(file, "%s_%s %s\n", Titulo, listan1[i], ":9001")
+		fmt.Fprintf(file, "%s_%s %s\n", Titulo, listan1[i], "dist137:9001")
 	}
 
 	for i := 0; i < largo2; i++ {
-		fmt.Fprintf(file, "%s_%s %s\n", Titulo, listan2[i], ":9002")
+		fmt.Fprintf(file, "%s_%s %s\n", Titulo, listan2[i], "dist138:9002")
 	}
 
 	for i := 0; i < largo3; i++ {
-		fmt.Fprintf(file, "%s_%s %s\n", Titulo, listan3[i], ":9003")
+		fmt.Fprintf(file, "%s_%s %s\n", Titulo, listan3[i], "dist139:9003")
 	}
 
 	fmt.Fprintf(file, "\n")
@@ -258,42 +286,60 @@ func escribirLog(log PropuestaRespuesta) {
 
 
 func (s *Server) AceptarPropuesta(ctx context.Context, message *PropuestaRespuesta) (*PropuestaRespuesta, error) {
-	largo1, err := strconv.Atoi(message.Intn1)
-	largo2, err := strconv.Atoi(message.Intn2)
-	largo3, err := strconv.Atoi(message.Intn3)
-	fmt.Printf("Hola 1: %d\n", largo1)
-	fmt.Printf("Hola 2: %d\n", largo2)
-	fmt.Printf("Hola 3: %d\n", largo3)
 	flag1 := true
 	flag2 := true
 	flag3 := true
-	if err != nil {
-		log.Fatalf("Error en transformar strings en int: %s", err)
+
+	var conn1 *grpc.ClientConn
+	conn1, err1 := grpc.Dial("dist137:9001", grpc.WithInsecure())
+	if err1 != nil {
+		fmt.Printf("No se pudo conectar al DataNode 1:  %s", err1)
 	}
-	if largo1 != 0 {
-		conn2, err := grpc.Dial("dist137:9001", grpc.WithInsecure())
-		if err != nil {
-			log.Fatalf("Error: %s", err)
-			flag1 = false
-		}
-		conn2.Close()
+	c1 := NewChatServiceClient(conn1)
+
+	defer conn1.Close()
+
+		// Datanode 2
+	var conn2 *grpc.ClientConn
+	conn2, err2 := grpc.Dial("dist138:9002", grpc.WithInsecure())
+	if err2 != nil {
+		fmt.Printf("No se pudo conectar al DataNode 2:  %s", err2)
 	}
-	if largo2 != 0 {
-		conn2, err := grpc.Dial("dist138:9002", grpc.WithInsecure())
-		if err != nil {
-			log.Fatalf("Error: %s", err)
-			flag2 = false
-		}
-		conn2.Close()
+	c2 := NewChatServiceClient(conn2)
+
+	defer conn2.Close()
+
+		// Datanode 3
+	var conn3 *grpc.ClientConn
+	conn3, err3 := grpc.Dial("dist139:9003", grpc.WithInsecure())
+	if err3 != nil {
+		fmt.Printf("No se pudo conectar al DataNode 3:  %s", err3)
 	}
-	if largo3 != 0 {
-		conn2, err := grpc.Dial("dist139:9003", grpc.WithInsecure())
-		if err != nil {
-			log.Fatalf("Error: %s", err)
-			flag3 = false
-		}
-		conn2.Close()
+	c3 := NewChatServiceClient(conn3)
+
+	defer conn3.Close()
+
+	//Estado DataNodes
+	pregunta := Message {
+		Body: "Estado",
 	}
+
+	_, error1 := c1.Estado(context.Background(), &pregunta)
+	_, error2 := c2.Estado(context.Background(), &pregunta)
+	_, error3 := c3.Estado(context.Background(), &pregunta)
+	if error1 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 1")
+		flag1 = false
+	}
+	if error2 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 2")
+		flag2 = false
+	}
+	if error3 != nil {
+		fmt.Println("No se puedo establecer conexion con el DataNode 3")
+		flag3 = false
+	}
+
 	var respuesta PropuestaRespuesta
 
 	if flag1 == false && message.Intn1 == "0" {
@@ -339,6 +385,7 @@ func (s *Server) AceptarPropuesta(ctx context.Context, message *PropuestaRespues
 			Intn3:  aux.Intn3,
 		}
 	}
+	fmt.Println("Partes para cada DataNode: ")
 	fmt.Println(respuesta.Nd1)
 	fmt.Println(respuesta.Nd2)
 	fmt.Println(respuesta.Nd3)
@@ -388,7 +435,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 				Parte: part,
 				NumPartes: uint64(largo1+largo2+largo3),
 				Buffer: chunkBufferBytes,
-				Port: ":9001",
+				Port: "dist137:9001",
 				Algo: "",
 			}
 			
@@ -428,7 +475,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 				Parte: part,
 				NumPartes: uint64(largo1+largo2+largo3),
 				Buffer: chunkBufferBytes,
-				Port: ":9002",
+				Port: "dist138:9002",
 				Algo: "",
 			}
 			
@@ -442,7 +489,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 		var conn3 *grpc.ClientConn
 			conn3, err3 := grpc.Dial("dist139:9003", grpc.WithInsecure())
 			if err3 != nil {
-				fmt.Printf("No se pudo conectar con el DataNode 3:  %s", err)
+				fmt.Printf("No se pudo conectar con el DataNode 2:  %s", err)
 			}
 			c3 := NewChatServiceClient(conn3)
 			defer conn3.Close()
@@ -470,7 +517,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 				Parte: part,
 				NumPartes: uint64(largo1+largo2+largo3),
 				Buffer: chunkBufferBytes,
-				Port: ":9003",
+				Port: "dist139:9003",
 				Algo: "",
 			}
 			
@@ -534,7 +581,6 @@ func (s *Server) PedirBiblioteca(ctx context.Context, message *Message) (*Biblio
         Largo:  strconv.Itoa(len(lista)),
         Libros: transformarListaS(lista),
     }
-    fmt.Println(respuesta)
     return &respuesta, nil
 }
 
@@ -570,7 +616,6 @@ func (s *Server) LogChunks(ctx context.Context, message *Message) (*Biblioteca, 
             log.Fatal(err)
         }
 		titulo = scanner.Text()
-		fmt.Printf("Este es el titulo: %s\n", titulo)
         aux := strings.SplitN(titulo, " ", 2)
         if len(aux) != 1 {
             largo, err = strconv.Atoi(aux[1])
@@ -590,7 +635,6 @@ func (s *Server) LogChunks(ctx context.Context, message *Message) (*Biblioteca, 
             scanner.Scan()
         }
 	}
-	fmt.Println("Entre a LogChunk")
     respuesta := Biblioteca{
         Largo:  strconv.Itoa(len(lista)),
         Libros: transformarListaS(lista),
@@ -640,6 +684,9 @@ func (s *Server) TraerChunk(ctx context.Context, message *Message) (*Message, er
 
 }
 
+func (s *Server) Estado(ctx context.Context, message *Message) (*Message, error){
+	return &Message{Body: "Up"}, nil
+}
 
 func AlgoritmoDistribuido() {
 

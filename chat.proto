@@ -46,4 +46,5 @@ service ChatService {
     rpc PedirBiblioteca(Message) returns (Biblioteca){}
     rpc LogChunks(Message) returns (Biblioteca){}
     rpc TraerChunk(Message) returns (Message) {}
+    rpc Estado(Message) returns (Message) {}
 }

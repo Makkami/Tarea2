@@ -14,12 +14,25 @@ import (
 La logica.go solo es el servidor levandado. las funciones con relacion a la logica estan en chat.go :D
 */
 func main() {
-	_, err := os.Create("log.txt")
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+
+	// Busca si existe un archivo log,txt
+	f, err1 := os.Open("log.txt")
+    if err1 == nil {
+        fmt.Println("Archivo log.txt existente")
+    }
+	f.Close()
+	
+	// Si no hay un log.txt, se crea uno
+	if err1 != nil {
+		_, err := os.Create("log.txt")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println("Archivo log.txt creado")
 	}
-	fmt.Println("Archivo log.txt creado")
+
+	
 
 	lis, err := net.Listen("tcp", ":9004")
 	if err != nil {
