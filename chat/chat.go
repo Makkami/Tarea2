@@ -25,7 +25,7 @@ type Server struct {
 	mux sync.Mutex
 }
 
-//transformarArregloS transforma una lista de ints a un string
+//transformarArregloS transforma una lista de ints a un string con separacion "@"
 func transformarArregloS(lista []int) string {
     Respuesta := ""
     for i := 0; i < len(lista); i++ {
@@ -38,7 +38,8 @@ func transformarArregloS(lista []int) string {
     return Respuesta
 }
 
-//SubirChunk xd
+// ChunkClienteANodo realiza la distribucion de los chunks a las distintas maquina utilizando
+// las otras funciones. Se realiza la distribucion dependiendo si se es centralizada o distribuida
 func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Message, error) {
 
 	fileName := message.Nombre + "_" + message.Parte
@@ -65,6 +66,7 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 				Intn2: res.Intn2,
 				Intn3: res.Intn3,
 			}
+			// Se crea conexion al NameNode
 			var conn *grpc.ClientConn
 			conn, err := grpc.Dial("dist140:9004", grpc.WithInsecure())
 			if err != nil {
@@ -73,6 +75,7 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 			c := NewChatServiceClient(conn)
 			defer conn.Close()
 
+			// Se solicita la aceptacion de la propuesta o la generacion de una nueva
 			prop, _ := c.AceptarPropuesta(context.Background(), &res2)
 			response, _ := RepartirChunks(prop)
 			fmt.Println(response)
@@ -90,6 +93,7 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 			// Conexion a los DataNodes distintos
 			flag1, flag2 := true, true
 			var conn1 *grpc.ClientConn
+
 			conn1, err1 := grpc.Dial(distintos[0], grpc.WithInsecure())
 			if err1 != nil {
 				fmt.Printf("No se pudo conectar con el DataNode:  %s", err1)
@@ -105,6 +109,7 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 			c2 := NewChatServiceClient(conn2)
 			defer conn2.Close()
 
+			// Estado de los DataNodes
 			pregunta := Message {
 				Body: "Estado",
 			}
@@ -121,6 +126,7 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 				flag2 = false
 			}
 
+			// Crea conexion al nodoactual
 			var connA *grpc.ClientConn
 			connA, errA := grpc.Dial(distintos[1], grpc.WithInsecure())
 			if errA != nil {
@@ -129,6 +135,7 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 			cA := NewChatServiceClient(connA)
 			defer connA.Close()
 
+			// Crea conexion al NameNode
 			var connNN *grpc.ClientConn
 			connNN, errNN := grpc.Dial("dist140:9004", grpc.WithInsecure())
 			if errNN != nil {
@@ -137,6 +144,7 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 			cNN := NewChatServiceClient(connNN)
 			defer connNN.Close()
 
+			// Propuesta de distribucion equitativa en los 3 datanodes
 			res := propuestaDataNode(int(message.NumPartes))
 			res2 := PropuestaRespuesta {
 				Nombre: message.Nombre,
@@ -152,39 +160,50 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 				Body: "Dummy",
 			}
 
+			// Cantidad de chunks
 			intero, err := strconv.Atoi(res2.Total)
 			if err != nil {
 				log.Fatalf("Error en transformar strings en int: %s", err)
 			}
 
+			// Caso en que los otros dos datanodes esten arriba
 			if flag1 && flag2{
+				// Se acepta o se rechaza la propuesta
 				respuesta, _ := c1.EnviarPropuestaDN(context.Background(), &res2)
 				respuesta2, _ := c2.EnviarPropuestaDN(context.Background(), &res2)
 				if respuesta.Body == "Aceptada" && respuesta2.Body == "Aceptada" {
 					for {
+						// Se verifica si los datanodes estan "Libres" u "Ocupados"
 						estado1, _ := c1.VerEstadoDis(context.Background(), &dummy)
 						estado2, _ := c2.VerEstadoDis(context.Background(), &dummy)
 						if estado1.Body == "Libre" && estado2.Body == "Libre" {
+							// Se reaparten los chunks
 							response, _ := RepartirChunks(&res2)
 							fmt.Println(response)
+							// Se cambia el estado del DataNode
 							new_estado := Message {
 								Body: "Ocupado",
 							}
 							cA.CambiarEstadoDis(context.Background(), &new_estado)
 							s.mux.Lock()
+							// Se escribe en el log.txt
 							cNN.EscribirLog(context.Background(), &res2)
 							s.mux.Unlock()
+							// Se restaura el estado del DataNode
 							next_estado := Message {
 								Body: "Libre",
 							}
 							cA.CambiarEstadoDis(context.Background(),&next_estado)
 							break
 						}else{
+							// Se esperan 3 segundos antes de intentar nuevamente
 							time.Sleep(time.Second * 3)
 						}
 					} 
 				}
+			// Caso en que solo el primer datanode este arriba
 			}else if flag1 && !flag2 {
+				// Se crea nueva propuesta
 				nueva := propuesta(intero)
 				res2 = PropuestaRespuesta {
 					Nombre: message.Nombre,
@@ -196,32 +215,41 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 					Intn2: nueva.Intn2,
 					Intn3: nueva.Intn3,
 				}
+				// Se acepta o se rechaza la propuesta
 				respuesta, _ := c1.EnviarPropuestaDN(context.Background(), &res2)
 				if respuesta.Body == "Aceptada" {
 					for {
+						// Se verifica si los datanodes estan "Libres" u "Ocupados"
 						estado1, _ := c1.VerEstadoDis(context.Background(), &dummy)
 						if estado1.Body == "Libre" {
+							// Se reaparten los chunks
 							response, _ := RepartirChunks(&res2)
 							fmt.Println(response)
+							// Se cambia el estado del DataNode
 							new_estado := Message {
 								Body: "Ocupado",
 							}
 							cA.CambiarEstadoDis(context.Background(), &new_estado)
 							s.mux.Lock()
+							// Se escribe en el log.txt
 							cNN.EscribirLog(context.Background(), &res2)
 							s.mux.Unlock()
 							next_estado := Message {
 								Body: "Libre",
 							}
+							// Se restaura el estado del DataNode
 							cA.CambiarEstadoDis(context.Background(),&next_estado)
 							break
 						}else{
+							// Se esperan 3 segundos antes de intentar nuevamente
 							time.Sleep(time.Second * 3)
 						
 						}
 					}
 				}
+			// Caso en que solo el segundo datanode este arriba	
 			}else if flag2 && !flag1 {
+				// Se crea nueva propuesta
 				nueva := propuesta(intero)
 				res2 = PropuestaRespuesta {
 					Nombre: message.Nombre,
@@ -233,26 +261,33 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 					Intn2: nueva.Intn2,
 					Intn3: nueva.Intn3,
 				}
+				// Se acepta o se rechaza la propuesta
 				respuesta2, _ := c2.EnviarPropuestaDN(context.Background(), &res2)
 				if respuesta2.Body == "Aceptada" {
 					for {
+						// Se verifica si los datanodes estan "Libres" u "Ocupados"
 						estado2, _ := c2.VerEstadoDis(context.Background(), &dummy)
 						if estado2.Body == "Libre" {
+							// Se reaparten los chunks
 							response, _ := RepartirChunks(&res2)
 							fmt.Println(response)
+							// Se cambia el estado del DataNode
 							new_estado := Message {
 								Body: "Ocupado",
 							}
 							cA.CambiarEstadoDis(context.Background(), &new_estado)
 							s.mux.Lock()
+							// Se escribe en el log.txt
 							cNN.EscribirLog(context.Background(), &res2)
 							s.mux.Unlock()
 							next_estado := Message {
 								Body: "Libre",
 							}
+							// Se restaura el estado del DataNode
 							cA.CambiarEstadoDis(context.Background(),&next_estado)
 							break
 						}else{
+							// Se esperan 3 segundos antes de intentar nuevamente
 							time.Sleep(time.Second * 3)
 						
 						}
@@ -265,6 +300,8 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 	return &Message{Body: "Se envio correctamente el chunk"}, nil
 }
 
+// propuestaDataNode recibe la cantidad de chunks de un libro y propone
+// separarlos de manea equitativa en cada datanode 
 func propuestaDataNode(total int) Propuesta {
 	var lista1 []int
 	var lista2 []int
@@ -294,9 +331,11 @@ func propuestaDataNode(total int) Propuesta {
 		//fmt.Println(i)
 
 	}
+	// Cantidad de chunks para cada datanode
 	largo1 := strconv.Itoa(len(lista1))
 	largo2 := strconv.Itoa(len(lista2))
 	largo3 := strconv.Itoa(len(lista3))
+	// Junta las listas con separacion "@"
 	st1 := transformarArregloS(lista1)
 	st2 := transformarArregloS(lista2)
 	st3 := transformarArregloS(lista3)
@@ -311,11 +350,13 @@ func propuestaDataNode(total int) Propuesta {
 	return respuesta
 }
 
+// propuesta genera una nueva propuesta en caso de que la anterior haya sido rechazada
+// retorna una nueva propuesta factible
 func propuesta(total int) Propuesta {
 	flag1 := true
 	flag2 := true
 	flag3 := true
-
+		// Datanode 1
 	var conn1 *grpc.ClientConn
 	conn1, err1 := grpc.Dial("dist137:9001", grpc.WithInsecure())
 	if err1 != nil {
@@ -395,9 +436,11 @@ func propuesta(total int) Propuesta {
 			}
 		}
 	}
+	// Cantidad de chunks para cada datanode
 	largo1 := strconv.Itoa(len(lista1))
 	largo2 := strconv.Itoa(len(lista2))
 	largo3 := strconv.Itoa(len(lista3))
+	// Junta las listas con separacion "@"
 	st1 := transformarArregloS(lista1)
 	st2 := transformarArregloS(lista2)
 	st3 := transformarArregloS(lista3)
@@ -411,10 +454,12 @@ func propuesta(total int) Propuesta {
 	}
 	return respuesta
 }
-// Escritura log para Algoritmo Distribuido
+// EscribirLog para Algoritmo Distribuido escribe en el archivo log los libros con las direcciones en la cual
+// se encuentra cada parte retornando un mensaje
 func (s *Server) EscribirLog(ctx context.Context, log *PropuestaRespuesta) (*Message, error) {
 	Titulo := log.Nombre
 	total := log.Total
+	// Creacion de log.txt o apertura
 	file, err := os.OpenFile("log.txt", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
 		fmt.Println(err)
@@ -431,6 +476,7 @@ func (s *Server) EscribirLog(ctx context.Context, log *PropuestaRespuesta) (*Mes
 		return &Message{Body: "Error"}, nil
 	}
 	defer file.Close()
+	// Escritura en el log.txt
 	fmt.Fprintf(file, "%s %s\n", Titulo, total)
 
 	for i := 0; i < largo1; i++ {
@@ -449,10 +495,12 @@ func (s *Server) EscribirLog(ctx context.Context, log *PropuestaRespuesta) (*Mes
 	return &Message{Body: "Chunk agregados al log.txt"}, nil
 }
 
-//escribirLog escribe el archivo
+// escribirLog escribe en el archivo log los libros con las direcciones en la cual
+// se encuentra cada parte
 func escribirLog(log PropuestaRespuesta) {
 	Titulo := log.Nombre
 	total := log.Total
+	// Creacion de log.txt o apertura
 	file, err := os.OpenFile("log.txt", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
 		fmt.Println(err)
@@ -469,6 +517,7 @@ func escribirLog(log PropuestaRespuesta) {
 		return
 	}
 	defer file.Close()
+	// Escritura en el log.txt
 	fmt.Fprintf(file, "%s %s\n", Titulo, total)
 
 	for i := 0; i < largo1; i++ {
@@ -486,7 +535,8 @@ func escribirLog(log PropuestaRespuesta) {
 	fmt.Fprintf(file, "\n")
 }
 
-
+// EnviarPropuestaDN puede aceptar o rechazar la propuesta recibida mediante porcentajes
+// se escoge un numero entre el 1 al 100, si es mayor que 10 se acepta, sino se rechaza
 func (s *Server) EnviarPropuestaDN(ctx context.Context, prop *PropuestaRespuesta) (*Message, error){
 	rand.Seed(time.Now().UnixNano())
 	rdnum := rand.Intn(100 - 0 + 1) + 1
@@ -498,11 +548,14 @@ func (s *Server) EnviarPropuestaDN(ctx context.Context, prop *PropuestaRespuesta
 		
 }
 
+// AceptarPropuesta verifica si la propuesta recibida es factible al ver el estado de los DataNodes
+// si es factible, acepta la propuesta. Si se rechaza, se genera una nueva con los DataNodes disponibles
 func (s *Server) AceptarPropuesta(ctx context.Context, message *PropuestaRespuesta) (*PropuestaRespuesta, error) {
 	flag1 := true
 	flag2 := true
 	flag3 := true
 	s.mux.Lock()
+		// Datanode 1
 	var conn1 *grpc.ClientConn
 	conn1, err1 := grpc.Dial("dist137:9001", grpc.WithInsecure())
 	if err1 != nil {
@@ -553,6 +606,7 @@ func (s *Server) AceptarPropuesta(ctx context.Context, message *PropuestaRespues
 		flag3 = false
 	}
 
+	// Se revisan si uno de los nodos caidos esta siendo considerado en la reparticion de chunks (largo de lista > 0)
 	var respuesta PropuestaRespuesta
 
 	if flag1 == false && message.Intn1 == "0" {
@@ -581,6 +635,7 @@ func (s *Server) AceptarPropuesta(ctx context.Context, message *PropuestaRespues
 	if flag1 == true && flag2 == true && flag3 == true {
 		respuesta = *message
 	} else {
+		// Se genera una nueva propuesta
 		fmt.Println("Entra a propuesta")
 		intero, err := strconv.Atoi(message.Total)
 		if err != nil {
@@ -607,10 +662,14 @@ func (s *Server) AceptarPropuesta(ctx context.Context, message *PropuestaRespues
 	return &respuesta, nil
 }
 
+// RepartirChunks recibe la propuesta definitiva de distribucion de los chunks en las maquina
+// y los crea en dichas direcciones
 func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
+	// Cantidad de chunks para cada maquina
 	largo1, err := strconv.Atoi(message.Intn1)
 	largo2, err := strconv.Atoi(message.Intn2)
 	largo3, err := strconv.Atoi(message.Intn3)
+	// Listas de las partes de los chunks
 	listan1 := strings.SplitN(message.Nd1, "@", largo1)
 	listan2 := strings.SplitN(message.Nd2, "@", largo2)
 	listan3 := strings.SplitN(message.Nd3, "@", largo3)
@@ -618,6 +677,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 		fmt.Println(err)
 	}
 	if largo1 != 0 {
+		// Se establece conexion con el DataNode 1
 		var conn *grpc.ClientConn
 			conn, err := grpc.Dial("dist137:9001", grpc.WithInsecure())
 			if err != nil {
@@ -625,7 +685,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 			}
 			c1 := NewChatServiceClient(conn)
 			defer conn.Close()
-
+		// Se itera por la cantidad de chunks que van en el DataNode 1
 		for i := 0; i < largo1; i++ {
 			title := message.Nombre
 			part := listan1[i]
@@ -643,7 +703,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 
             var chunkSize int64 = chunkInfo.Size()
 			chunkBufferBytes := make([]byte, chunkSize)
-			
+			// Contenido del chunk
 			chunkToSend := Chunk {
 				Nombre: title,
 				Parte: part,
@@ -658,6 +718,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 		}
 	}
 	if largo2 != 0 {
+		// Se establece conexion con el DataNode 2
 		var conn2 *grpc.ClientConn
 			conn2, err2 := grpc.Dial("dist138:9002", grpc.WithInsecure())
 			if err2 != nil {
@@ -665,7 +726,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 			}
 			c2 := NewChatServiceClient(conn2)
 			defer conn2.Close()
-
+		// Se itera por la cantidad de chunks que van en el DataNode 2
 		for i := 0; i < largo2; i++ {
 			title := message.Nombre
 			part := listan2[i]
@@ -683,7 +744,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 
             var chunkSize int64 = chunkInfo.Size()
 			chunkBufferBytes := make([]byte, chunkSize)
-			
+			// Contenido del chunk			
 			chunkToSend := Chunk {
 				Nombre: title,
 				Parte: part,
@@ -695,11 +756,10 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 			
 			respuesta2, _ := c2.EnviarChunksEntreNodos(context.Background(), &chunkToSend)
 			fmt.Println(respuesta2)
-
-
 		}
 	}
 	if largo3 != 0 {
+		// Se establece conexion con el DataNode 3
 		var conn3 *grpc.ClientConn
 			conn3, err3 := grpc.Dial("dist139:9003", grpc.WithInsecure())
 			if err3 != nil {
@@ -707,7 +767,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 			}
 			c3 := NewChatServiceClient(conn3)
 			defer conn3.Close()
-
+		// Se itera por la cantidad de chunks que van en el DataNode 3
 		for i := 0; i < largo3; i++ {
 			title := message.Nombre
 			part := listan3[i]
@@ -725,7 +785,7 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 
             var chunkSize int64 = chunkInfo.Size()
 			chunkBufferBytes := make([]byte, chunkSize)
-			
+			// Contenido del chunk			
 			chunkToSend := Chunk {
 				Nombre: title,
 				Parte: part,
@@ -741,7 +801,8 @@ func RepartirChunks(message *PropuestaRespuesta) (*Message, error){
 	}
 	return &Message{Body: "Chunks repartidos exitosamente"}, nil
 }
-
+// EnviarChunksEntreNodos envia un chunk a otro nodo creando un archivo binario que tiene
+// como nombre el titulo del libro mas la parte
 func (s *Server) EnviarChunksEntreNodos(ctx context.Context, message *Chunk) (*Message, error){
 	fileName := message.Nombre + "_" + message.Parte
 	_, err := os.Create(fileName)
@@ -758,7 +819,7 @@ func (s *Server) EnviarChunksEntreNodos(ctx context.Context, message *Chunk) (*M
 	return &Message{Body: "Chunk " + message.Parte + " repartido en la ip " + message.Port}, nil
 }
 
-//pedirBiblioteca te envia los libros que hay en el directorio
+//PedirBiblioteca te envia los libros que hay en el directorio como un string con separacion "@"
 func (s *Server) PedirBiblioteca(ctx context.Context, message *Message) (*Biblioteca, error) {
     f, err := os.Open("log.txt")
 
@@ -797,7 +858,7 @@ func (s *Server) PedirBiblioteca(ctx context.Context, message *Message) (*Biblio
     }
     return &respuesta, nil
 }
-
+// transformarListaS junta los nombres de las partes de los chunks con "@"
 func transformarListaS(lista []string) string {
     Respuesta := ""
     for i := 0; i < len(lista); i++ {
@@ -809,7 +870,8 @@ func transformarListaS(lista []string) string {
     }
     return Respuesta
 }
-
+// LogChunks busca el libro que se va a descargar y entrega un string con las direcciones
+// de donde se encuentran los chunks de dicho libro
 func (s *Server) LogChunks(ctx context.Context, message *Message) (*Biblioteca, error) {
     f, err := os.Open("log.txt")
 
@@ -855,7 +917,8 @@ func (s *Server) LogChunks(ctx context.Context, message *Message) (*Biblioteca, 
 	}
     return &respuesta, nil
 }
-
+// TraerChunk toma los chunks de un datanode y los envia al cliente
+// recibe un string del nombre y la parte del chunk y lo envia mediante Protocol Buffer
 func (s *Server) TraerChunk(ctx context.Context, message *Message) (*Message, error) {
 	aux := strings.Split(message.Body, "_")
 	nombre := aux[0]
@@ -870,6 +933,7 @@ func (s *Server) TraerChunk(ctx context.Context, message *Message) (*Message, er
 	c := NewChatServiceClient(conn)
 	defer conn.Close()
 
+	// Abrir archivo con el nombre del chunk
 	newFileChunk, err := os.Open(nombre + "_" + parte)
 
 	if err != nil {
@@ -883,6 +947,7 @@ func (s *Server) TraerChunk(ctx context.Context, message *Message) (*Message, er
 	var chunkSize int64 = chunkInfo.Size()
 	chunkBufferBytes := make([]byte, chunkSize)
 	
+	// Contenido del chunk a enviar al cliente
 	chunkToSend := Chunk {
 		Nombre: nombre,
 		Parte: parte,
@@ -891,22 +956,28 @@ func (s *Server) TraerChunk(ctx context.Context, message *Message) (*Message, er
 		Port: "dist140:9000",
 		Algo: "",
 	}
-
+	// Enviar el chunk mediante la funcion EnviarChunksEntreNodos
 	respuesta, _ := c.EnviarChunksEntreNodos(context.Background(), &chunkToSend)
 	fmt.Println(respuesta)
 	return &Message{Body: "Chunk "+ parte +" enviado al cliente"}, nil
 
 }
 
+// Estado avisa si un datanode esta "caido" mediante el envio de un mensaje
+// recibe un mensaje y retorno otro verificando la conexion
 func (s *Server) Estado(ctx context.Context, message *Message) (*Message, error){
 	return &Message{Body: "Up"}, nil
 }
 
+// CambiarEstadoDis cambia el estado de un datanode de "Libre" a "Ocupado" o viceversa
+// recibe un string del nuevo estado del datanode y retorna un mensaje avisando que se cambio
 func (s *Server) CambiarEstadoDis(ctx context.Context, message *Message) (*Message, error) {
 	s.estado = message.Body
 	return &Message{Body: "Cambio de estado a " + message.Body}, nil
 }
 
+// VerEstadoDis ve el estado que tiene un datanode, si esta "Ocupado" o "Libre".
+// recibe un mensaje y retorna el estado del datanode
 func (s *Server) VerEstadoDis(ctx context.Context, message *Message) (*Message, error) {
 	estado_actual := s.estado
 	return &Message{Body: estado_actual}, nil

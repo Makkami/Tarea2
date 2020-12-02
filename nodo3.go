@@ -11,14 +11,15 @@ import (
 )
 
 /*Funcion main
-La logica.go solo es el servidor levandado. las funciones con relacion a la logica estan en chat.go :D
+La logica.go solo es el servidor levandado. las funciones con relacion a la logica estan en chat.go
 */
 func main() {
+	// Creacion de servidor que escucha en el puesto 9003
 	lis, err := net.Listen("tcp", ":9003")
 	if err != nil {
 		log.Fatalf("Failed to listen on port 9003: %v", err)
 	}
-
+	// Se establece el estado del nodo como "Libre"
 	s3 := chat.Server{}
 	estado := chat.Message {
 		Body: "Libre",

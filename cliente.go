@@ -17,7 +17,7 @@ import (
 	"google.golang.org/grpc"
 )	
 
-
+// crearServer Crear servidor que escucha en el puerto :9000, no recibe input ni entrega output
 func crearServer() {
 	lis, err := net.Listen("tcp", ":9000")
 	if err != nil {
@@ -32,7 +32,7 @@ func crearServer() {
 		log.Fatalf("a %v", err)
 	}
 }
-
+// ExisteLibro verifica si ya existe un libro con el mismo nombre dentro de la lista de libros, recibe el titulo del libro y la lista de titulos
 func ExisteLibro(arr []string, nombre string) bool {
 	for _, numero := range arr {
 		if numero == nombre {
@@ -42,9 +42,12 @@ func ExisteLibro(arr []string, nombre string) bool {
 	return false
 }
 
+// SubirLibro envia los chunks de un libro a un DataNode aleatorio mediante protocol buffer,
+// recibe el nombre del algoritmo escogido para distribuir el libro
 func SubirLibro(op_algo string) {
 	var reader = bufio.NewReader(os.Stdin)
 
+	// Puertos de las VMs
 	ports := []string{
 		"dist137:9001",
 		"dist138:9002",
@@ -75,6 +78,7 @@ func SubirLibro(op_algo string) {
 		fmt.Println("Ya fue subido un libro con ese nombre")
 		return
 	}
+	// Nombre del libro con la extension .pdf
 	fileToBeChunked := "./LibrosParaSubir/" + libro + ".pdf"
 	
 	flag1, flag2, flag3 := true, true, true
@@ -130,7 +134,7 @@ func SubirLibro(op_algo string) {
 		flag3 = false
 	}
 
-	//Elegir Datanode random
+	// Filtro de datanodes que esten arriba
 	sliceDN := []int{1,2,3}
 	if (!flag1 && !flag2 && !flag3) {
 		fmt.Println("No se pudo establecer conexión que ningun DataNode")
@@ -143,11 +147,14 @@ func SubirLibro(op_algo string) {
 	} else if !flag3 {sliceDN = []int{1,2}}
 	fmt.Println("Lista de nodos activos: ", sliceDN)
 	
+	// Elegir uno de los datanodes disponibles aleatoriamente
 	rand.Seed(time.Now().UnixNano())
 	rdIndex := rand.Intn(len(sliceDN))
 	dn_rand := sliceDN[rdIndex]
-	fmt.Printf("Random: %d\n", dn_rand)
+	fmt.Printf("Nodo seleccionado: %d\n", dn_rand)
 	
+
+	// Inicio de la separacion de chunks
 	file, err := os.Open(fileToBeChunked)
 
 	if err != nil {
@@ -168,6 +175,7 @@ func SubirLibro(op_algo string) {
 	totalPartsNum := uint64(math.Ceil(float64(fileSize) / float64(fileChunk)))
 
 	fmt.Printf("Dividiendo el archivo en %d partes.\n", totalPartsNum)
+	// Eleccion de ip acorde a datanode elegido
 	var port string
 	switch dn_rand {
 	case 1:
@@ -178,6 +186,7 @@ func SubirLibro(op_algo string) {
 		port = ports[2]
 	}
 
+	// Enviar chunks
 	for i := uint64(0); i < totalPartsNum; i++ {
 
 		partSize := int(math.Min(fileChunk, float64(fileSize-int64(i*fileChunk))))
@@ -195,6 +204,7 @@ func SubirLibro(op_algo string) {
 		}
 
 		var response *chat.Message
+		// Enviar chunks al datanode elegido
 		switch dn_rand {
 		case 1:
 			response, _ = c.ChunkClienteANodo(context.Background(), &message)
@@ -329,6 +339,7 @@ func DescargarLibro(){
 		}
 	}
 
+	// Juntar chunks creando un nuevo libro
 	newFileName := "NEW" + nombre.Body + ".pdf"
 	_, err = os.Create(newFileName)
 
@@ -400,9 +411,11 @@ func DescargarLibro(){
 }
 
 func main() {
-
+	// Crear servidor para escuchar en el puerto :9000
 	go crearServer()
+	// Menu
 	for {
+		// Opcion para descargar o subir libro
 		var op_cliente, op_algo string
 		fmt.Println("----------------------")
 		fmt.Println("Eliga una opcion: ")
@@ -414,6 +427,7 @@ func main() {
 
 
 		if strings.Compare(op_cliente, "1") == 0 {
+			// Eleccion de algoritmo con el cual se distriburan los chunks
 			fmt.Println("----------------------")
 			fmt.Println("Va a subir un libro, escoga el algoritmo que utilizara: ")
 			fmt.Println("1. Centralizado")
@@ -430,7 +444,7 @@ func main() {
 			}else {
 				fmt.Println("Tiene que elegir una de las opciones mostradas")
 			}
-			
+			// Opcion para descargar libro
 		} else if strings.Compare(op_cliente, "2") == 0 {
 			fmt.Println("Descargar libro")
 			DescargarLibro()

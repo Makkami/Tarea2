@@ -11,7 +11,7 @@ import (
 )
 
 /*Funcion main
-La logica.go solo es el servidor levandado. las funciones con relacion a la logica estan en chat.go :D
+La logica.go solo es el servidor levandado. las funciones con relacion a la logica estan en chat.go
 */
 func main() {
 
@@ -32,8 +32,7 @@ func main() {
 		fmt.Println("Archivo log.txt creado")
 	}
 
-	
-
+	// Se crear servidor que escucha en el puerto :9004
 	lis, err := net.Listen("tcp", ":9004")
 	if err != nil {
 		log.Fatalf("Failed to listen on port 9004: %v", err)
