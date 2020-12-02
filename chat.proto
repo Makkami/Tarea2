@@ -47,4 +47,8 @@ service ChatService {
     rpc LogChunks(Message) returns (Biblioteca){}
     rpc TraerChunk(Message) returns (Message) {}
     rpc Estado(Message) returns (Message) {}
+    rpc EnviarPropuestaDN(PropuestaRespuesta) returns (Message) {}
+    rpc CambiarEstadoDis(Message) returns (Message) {}
+    rpc VerEstadoDis(Message) returns (Message) {}
+    rpc EscribirLog(PropuestaRespuesta) returns (Message) {}
 }

@@ -447,7 +447,7 @@ var file_chat_proto_rawDesc = []byte{
 	0x01, 0x28, 0x09, 0x52, 0x05, 0x69, 0x6e, 0x74, 0x6e, 0x31, 0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e,
 	0x74, 0x6e, 0x32, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x69, 0x6e, 0x74, 0x6e, 0x32,
 	0x12, 0x14, 0x0a, 0x05, 0x69, 0x6e, 0x74, 0x6e, 0x33, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x05, 0x69, 0x6e, 0x74, 0x6e, 0x33, 0x32, 0x80, 0x03, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x74, 0x53,
+	0x05, 0x69, 0x6e, 0x74, 0x6e, 0x33, 0x32, 0xde, 0x04, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x74, 0x53,
 	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x31, 0x0a, 0x11, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x43,
 	0x6c, 0x69, 0x65, 0x6e, 0x74, 0x65, 0x41, 0x4e, 0x6f, 0x64, 0x6f, 0x12, 0x0b, 0x2e, 0x63, 0x68,
 	0x61, 0x74, 0x2e, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x1a, 0x0d, 0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e,
@@ -471,8 +471,21 @@ var file_chat_proto_rawDesc = []byte{
 	0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x12,
 	0x28, 0x0a, 0x06, 0x45, 0x73, 0x74, 0x61, 0x64, 0x6f, 0x12, 0x0d, 0x2e, 0x63, 0x68, 0x61, 0x74,
 	0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x0d, 0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e,
-	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x12, 0x3e, 0x0a, 0x11, 0x45, 0x6e, 0x76,
+	0x69, 0x61, 0x72, 0x50, 0x72, 0x6f, 0x70, 0x75, 0x65, 0x73, 0x74, 0x61, 0x44, 0x4e, 0x12, 0x18,
+	0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e, 0x50, 0x72, 0x6f, 0x70, 0x75, 0x65, 0x73, 0x74, 0x61, 0x52,
+	0x65, 0x73, 0x70, 0x75, 0x65, 0x73, 0x74, 0x61, 0x1a, 0x0d, 0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x12, 0x32, 0x0a, 0x10, 0x43, 0x61, 0x6d,
+	0x62, 0x69, 0x61, 0x72, 0x45, 0x73, 0x74, 0x61, 0x64, 0x6f, 0x44, 0x69, 0x73, 0x12, 0x0d, 0x2e,
+	0x63, 0x68, 0x61, 0x74, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x0d, 0x2e, 0x63,
+	0x68, 0x61, 0x74, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x12, 0x2e, 0x0a,
+	0x0c, 0x56, 0x65, 0x72, 0x45, 0x73, 0x74, 0x61, 0x64, 0x6f, 0x44, 0x69, 0x73, 0x12, 0x0d, 0x2e,
+	0x63, 0x68, 0x61, 0x74, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x0d, 0x2e, 0x63,
+	0x68, 0x61, 0x74, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x12, 0x38, 0x0a,
+	0x0b, 0x45, 0x73, 0x63, 0x72, 0x69, 0x62, 0x69, 0x72, 0x4c, 0x6f, 0x67, 0x12, 0x18, 0x2e, 0x63,
+	0x68, 0x61, 0x74, 0x2e, 0x50, 0x72, 0x6f, 0x70, 0x75, 0x65, 0x73, 0x74, 0x61, 0x52, 0x65, 0x73,
+	0x70, 0x75, 0x65, 0x73, 0x74, 0x61, 0x1a, 0x0d, 0x2e, 0x63, 0x68, 0x61, 0x74, 0x2e, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -496,25 +509,33 @@ var file_chat_proto_goTypes = []interface{}{
 	(*Propuesta)(nil),          // 4: chat.Propuesta
 }
 var file_chat_proto_depIdxs = []int32{
-	1, // 0: chat.ChatService.ChunkClienteANodo:input_type -> chat.Chunk
-	2, // 1: chat.ChatService.AceptarPropuesta:input_type -> chat.PropuestaRespuesta
-	1, // 2: chat.ChatService.EnviarChunksEntreNodos:input_type -> chat.Chunk
-	0, // 3: chat.ChatService.PedirBiblioteca:input_type -> chat.Message
-	0, // 4: chat.ChatService.LogChunks:input_type -> chat.Message
-	0, // 5: chat.ChatService.TraerChunk:input_type -> chat.Message
-	0, // 6: chat.ChatService.Estado:input_type -> chat.Message
-	0, // 7: chat.ChatService.ChunkClienteANodo:output_type -> chat.Message
-	2, // 8: chat.ChatService.AceptarPropuesta:output_type -> chat.PropuestaRespuesta
-	0, // 9: chat.ChatService.EnviarChunksEntreNodos:output_type -> chat.Message
-	3, // 10: chat.ChatService.PedirBiblioteca:output_type -> chat.Biblioteca
-	3, // 11: chat.ChatService.LogChunks:output_type -> chat.Biblioteca
-	0, // 12: chat.ChatService.TraerChunk:output_type -> chat.Message
-	0, // 13: chat.ChatService.Estado:output_type -> chat.Message
-	7, // [7:14] is the sub-list for method output_type
-	0, // [0:7] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1,  // 0: chat.ChatService.ChunkClienteANodo:input_type -> chat.Chunk
+	2,  // 1: chat.ChatService.AceptarPropuesta:input_type -> chat.PropuestaRespuesta
+	1,  // 2: chat.ChatService.EnviarChunksEntreNodos:input_type -> chat.Chunk
+	0,  // 3: chat.ChatService.PedirBiblioteca:input_type -> chat.Message
+	0,  // 4: chat.ChatService.LogChunks:input_type -> chat.Message
+	0,  // 5: chat.ChatService.TraerChunk:input_type -> chat.Message
+	0,  // 6: chat.ChatService.Estado:input_type -> chat.Message
+	2,  // 7: chat.ChatService.EnviarPropuestaDN:input_type -> chat.PropuestaRespuesta
+	0,  // 8: chat.ChatService.CambiarEstadoDis:input_type -> chat.Message
+	0,  // 9: chat.ChatService.VerEstadoDis:input_type -> chat.Message
+	2,  // 10: chat.ChatService.EscribirLog:input_type -> chat.PropuestaRespuesta
+	0,  // 11: chat.ChatService.ChunkClienteANodo:output_type -> chat.Message
+	2,  // 12: chat.ChatService.AceptarPropuesta:output_type -> chat.PropuestaRespuesta
+	0,  // 13: chat.ChatService.EnviarChunksEntreNodos:output_type -> chat.Message
+	3,  // 14: chat.ChatService.PedirBiblioteca:output_type -> chat.Biblioteca
+	3,  // 15: chat.ChatService.LogChunks:output_type -> chat.Biblioteca
+	0,  // 16: chat.ChatService.TraerChunk:output_type -> chat.Message
+	0,  // 17: chat.ChatService.Estado:output_type -> chat.Message
+	0,  // 18: chat.ChatService.EnviarPropuestaDN:output_type -> chat.Message
+	0,  // 19: chat.ChatService.CambiarEstadoDis:output_type -> chat.Message
+	0,  // 20: chat.ChatService.VerEstadoDis:output_type -> chat.Message
+	0,  // 21: chat.ChatService.EscribirLog:output_type -> chat.Message
+	11, // [11:22] is the sub-list for method output_type
+	0,  // [0:11] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_chat_proto_init() }
@@ -623,6 +644,10 @@ type ChatServiceClient interface {
 	LogChunks(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Biblioteca, error)
 	TraerChunk(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
 	Estado(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+	EnviarPropuestaDN(ctx context.Context, in *PropuestaRespuesta, opts ...grpc.CallOption) (*Message, error)
+	CambiarEstadoDis(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+	VerEstadoDis(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+	EscribirLog(ctx context.Context, in *PropuestaRespuesta, opts ...grpc.CallOption) (*Message, error)
 }
 
 type chatServiceClient struct {
@@ -696,6 +721,42 @@ func (c *chatServiceClient) Estado(ctx context.Context, in *Message, opts ...grp
 	return out, nil
 }
 
+func (c *chatServiceClient) EnviarPropuestaDN(ctx context.Context, in *PropuestaRespuesta, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/chat.ChatService/EnviarPropuestaDN", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatServiceClient) CambiarEstadoDis(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/chat.ChatService/CambiarEstadoDis", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatServiceClient) VerEstadoDis(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/chat.ChatService/VerEstadoDis", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatServiceClient) EscribirLog(ctx context.Context, in *PropuestaRespuesta, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/chat.ChatService/EscribirLog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChatServiceServer is the server API for ChatService service.
 type ChatServiceServer interface {
 	ChunkClienteANodo(context.Context, *Chunk) (*Message, error)
@@ -705,6 +766,10 @@ type ChatServiceServer interface {
 	LogChunks(context.Context, *Message) (*Biblioteca, error)
 	TraerChunk(context.Context, *Message) (*Message, error)
 	Estado(context.Context, *Message) (*Message, error)
+	EnviarPropuestaDN(context.Context, *PropuestaRespuesta) (*Message, error)
+	CambiarEstadoDis(context.Context, *Message) (*Message, error)
+	VerEstadoDis(context.Context, *Message) (*Message, error)
+	EscribirLog(context.Context, *PropuestaRespuesta) (*Message, error)
 }
 
 // UnimplementedChatServiceServer can be embedded to have forward compatible implementations.
@@ -731,6 +796,18 @@ func (*UnimplementedChatServiceServer) TraerChunk(context.Context, *Message) (*M
 }
 func (*UnimplementedChatServiceServer) Estado(context.Context, *Message) (*Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Estado not implemented")
+}
+func (*UnimplementedChatServiceServer) EnviarPropuestaDN(context.Context, *PropuestaRespuesta) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EnviarPropuestaDN not implemented")
+}
+func (*UnimplementedChatServiceServer) CambiarEstadoDis(context.Context, *Message) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CambiarEstadoDis not implemented")
+}
+func (*UnimplementedChatServiceServer) VerEstadoDis(context.Context, *Message) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerEstadoDis not implemented")
+}
+func (*UnimplementedChatServiceServer) EscribirLog(context.Context, *PropuestaRespuesta) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EscribirLog not implemented")
 }
 
 func RegisterChatServiceServer(s *grpc.Server, srv ChatServiceServer) {
@@ -863,6 +940,78 @@ func _ChatService_Estado_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChatService_EnviarPropuestaDN_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PropuestaRespuesta)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).EnviarPropuestaDN(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chat.ChatService/EnviarPropuestaDN",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).EnviarPropuestaDN(ctx, req.(*PropuestaRespuesta))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ChatService_CambiarEstadoDis_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).CambiarEstadoDis(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chat.ChatService/CambiarEstadoDis",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).CambiarEstadoDis(ctx, req.(*Message))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ChatService_VerEstadoDis_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).VerEstadoDis(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chat.ChatService/VerEstadoDis",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).VerEstadoDis(ctx, req.(*Message))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ChatService_EscribirLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PropuestaRespuesta)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).EscribirLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/chat.ChatService/EscribirLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).EscribirLog(ctx, req.(*PropuestaRespuesta))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _ChatService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "chat.ChatService",
 	HandlerType: (*ChatServiceServer)(nil),
@@ -894,6 +1043,22 @@ var _ChatService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Estado",
 			Handler:    _ChatService_Estado_Handler,
+		},
+		{
+			MethodName: "EnviarPropuestaDN",
+			Handler:    _ChatService_EnviarPropuestaDN_Handler,
+		},
+		{
+			MethodName: "CambiarEstadoDis",
+			Handler:    _ChatService_CambiarEstadoDis_Handler,
+		},
+		{
+			MethodName: "VerEstadoDis",
+			Handler:    _ChatService_VerEstadoDis_Handler,
+		},
+		{
+			MethodName: "EscribirLog",
+			Handler:    _ChatService_EscribirLog_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

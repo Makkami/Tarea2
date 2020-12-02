@@ -8,21 +8,21 @@ import (
 	"strconv"
 	"strings"
 	"bufio"
+	"math/rand"
+	"time"
+	"sync"
 
 	"golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )
 
-//Server xd
+
 type Server struct {
 	dn1 []int
 	dn2 []int
 	dn3 []int
-}
-
-func conseguirChunk(Numero int, Name string) Chunk {
-	var Envio Chunk
-	return Envio
+	estado string
+	mux sync.Mutex
 }
 
 //transformarArregloS transforma una lista de ints a un string
@@ -51,14 +51,9 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 
 	// write/save buffer to disk
 	ioutil.WriteFile(fileName, message.Buffer, os.ModeAppend)
-
-
-	
-	fmt.Printf("Parte: %s; NumPartes: %s\n", message.Parte, strconv.FormatUint(message.NumPartes,10))
-
 	if message.Parte == strconv.FormatUint(message.NumPartes-1,10) {
+		// Centralizado
 		if strings.Compare(message.Algo, "Centralizado") == 0 {
-			fmt.Println("Entre a centralizado")
 			res := propuestaDataNode(int(message.NumPartes))
 			res2 := PropuestaRespuesta {
 				Nombre: message.Nombre,
@@ -70,14 +65,6 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 				Intn2: res.Intn2,
 				Intn3: res.Intn3,
 			}
-			/*
-			fmt.Printf("Lista nd1: %s\n", res2.Nd1)
-			fmt.Printf("Lista nd2: %s\n", res2.Nd2)
-			fmt.Printf("Lista nd3: %s\n", res2.Nd3)
-			fmt.Printf("Largo lista nd1: %s\n", res2.Intn1)
-			fmt.Printf("Largo lista nd2: %s\n", res2.Intn2)
-			fmt.Printf("Largo lista nd3: %s\n", res2.Intn3)
-			*/
 			var conn *grpc.ClientConn
 			conn, err := grpc.Dial("dist140:9004", grpc.WithInsecure())
 			if err != nil {
@@ -89,15 +76,194 @@ func (s *Server) ChunkClienteANodo(ctx context.Context, message *Chunk) (*Messag
 			prop, _ := c.AceptarPropuesta(context.Background(), &res2)
 			response, _ := RepartirChunks(prop)
 			fmt.Println(response)
-
+		
+		// Distribuido
 		}else if strings.Compare(message.Algo, "Distribuido") == 0 {
-			AlgoritmoDistribuido()
+			ports := []string{"dist137:9001","dist138:9002","dist139:9003"}
+			var distintos []string
+			for i := 0; i < len(ports); i++ {
+				if ports[i] != message.Port {
+					distintos = append(distintos, ports[i])
+				}
+			}
+
+			// Conexion a los DataNodes distintos
+			flag1, flag2 := true, true
+			var conn1 *grpc.ClientConn
+			conn1, err1 := grpc.Dial(distintos[0], grpc.WithInsecure())
+			if err1 != nil {
+				fmt.Printf("No se pudo conectar con el DataNode:  %s", err1)
+			}
+			c1 := NewChatServiceClient(conn1)
+			defer conn1.Close()
+
+			var conn2 *grpc.ClientConn
+			conn2, err2 := grpc.Dial(distintos[1], grpc.WithInsecure())
+			if err2 != nil {
+				fmt.Printf("No se pudo conectar con el DataNode:  %s", err2)
+			}
+			c2 := NewChatServiceClient(conn2)
+			defer conn2.Close()
+
+			pregunta := Message {
+				Body: "Estado",
+			}
+		
+			_, error1 := c1.Estado(context.Background(), &pregunta)
+			_, error2 := c2.Estado(context.Background(), &pregunta)
+
+			if error1 != nil {
+				fmt.Println("No se puedo establecer conexion con el DataNode 1")
+				flag1 = false
+			}
+			if error2 != nil {
+				fmt.Println("No se puedo establecer conexion con el DataNode 2")
+				flag2 = false
+			}
+
+			var connA *grpc.ClientConn
+			connA, errA := grpc.Dial(distintos[1], grpc.WithInsecure())
+			if errA != nil {
+				fmt.Printf("No se pudo conectar con el DataNode:  %s", errA)
+			}
+			cA := NewChatServiceClient(connA)
+			defer connA.Close()
+
+			var connNN *grpc.ClientConn
+			connNN, errNN := grpc.Dial("dist140:9004", grpc.WithInsecure())
+			if errNN != nil {
+				fmt.Printf("No se pudo conectar con el NameNode:  %s", errNN)
+			}
+			cNN := NewChatServiceClient(connNN)
+			defer connNN.Close()
+
+			res := propuestaDataNode(int(message.NumPartes))
+			res2 := PropuestaRespuesta {
+				Nombre: message.Nombre,
+				Total: strconv.FormatUint(message.NumPartes,10),
+				Nd1: res.Nd1,
+				Nd2: res.Nd2,
+				Nd3: res.Nd3,
+				Intn1: res.Intn1,
+				Intn2: res.Intn2,
+				Intn3: res.Intn3,
+			}
+			dummy := Message {
+				Body: "Dummy",
+			}
+
+			intero, err := strconv.Atoi(res2.Total)
+			if err != nil {
+				log.Fatalf("Error en transformar strings en int: %s", err)
+			}
+
+			if flag1 && flag2{
+				respuesta, _ := c1.EnviarPropuestaDN(context.Background(), &res2)
+				respuesta2, _ := c2.EnviarPropuestaDN(context.Background(), &res2)
+				if respuesta.Body == "Aceptada" && respuesta2.Body == "Aceptada" {
+					for {
+						estado1, _ := c1.VerEstadoDis(context.Background(), &dummy)
+						estado2, _ := c2.VerEstadoDis(context.Background(), &dummy)
+						if estado1.Body == "Libre" && estado2.Body == "Libre" {
+							response, _ := RepartirChunks(&res2)
+							fmt.Println(response)
+							new_estado := Message {
+								Body: "Ocupado",
+							}
+							cA.CambiarEstadoDis(context.Background(), &new_estado)
+							s.mux.Lock()
+							cNN.EscribirLog(context.Background(), &res2)
+							s.mux.Unlock()
+							next_estado := Message {
+								Body: "Libre",
+							}
+							cA.CambiarEstadoDis(context.Background(),&next_estado)
+							break
+						}else{
+							time.Sleep(time.Second * 3)
+						}
+					} 
+				}
+			}else if flag1 && !flag2 {
+				nueva := propuesta(intero)
+				res2 = PropuestaRespuesta {
+					Nombre: message.Nombre,
+					Total: strconv.FormatUint(message.NumPartes,10),
+					Nd1: nueva.Nd1,
+					Nd2: nueva.Nd2,
+					Nd3: nueva.Nd3,
+					Intn1: nueva.Intn1,
+					Intn2: nueva.Intn2,
+					Intn3: nueva.Intn3,
+				}
+				respuesta, _ := c1.EnviarPropuestaDN(context.Background(), &res2)
+				if respuesta.Body == "Aceptada" {
+					for {
+						estado1, _ := c1.VerEstadoDis(context.Background(), &dummy)
+						if estado1.Body == "Libre" {
+							response, _ := RepartirChunks(&res2)
+							fmt.Println(response)
+							new_estado := Message {
+								Body: "Ocupado",
+							}
+							cA.CambiarEstadoDis(context.Background(), &new_estado)
+							s.mux.Lock()
+							cNN.EscribirLog(context.Background(), &res2)
+							s.mux.Unlock()
+							next_estado := Message {
+								Body: "Libre",
+							}
+							cA.CambiarEstadoDis(context.Background(),&next_estado)
+							break
+						}else{
+							time.Sleep(time.Second * 3)
+						
+						}
+					}
+				}
+			}else if flag2 && !flag1 {
+				nueva := propuesta(intero)
+				res2 = PropuestaRespuesta {
+					Nombre: message.Nombre,
+					Total: strconv.FormatUint(message.NumPartes,10),
+					Nd1: nueva.Nd1,
+					Nd2: nueva.Nd2,
+					Nd3: nueva.Nd3,
+					Intn1: nueva.Intn1,
+					Intn2: nueva.Intn2,
+					Intn3: nueva.Intn3,
+				}
+				respuesta2, _ := c2.EnviarPropuestaDN(context.Background(), &res2)
+				if respuesta2.Body == "Aceptada" {
+					for {
+						estado2, _ := c2.VerEstadoDis(context.Background(), &dummy)
+						if estado2.Body == "Libre" {
+							response, _ := RepartirChunks(&res2)
+							fmt.Println(response)
+							new_estado := Message {
+								Body: "Ocupado",
+							}
+							cA.CambiarEstadoDis(context.Background(), &new_estado)
+							s.mux.Lock()
+							cNN.EscribirLog(context.Background(), &res2)
+							s.mux.Unlock()
+							next_estado := Message {
+								Body: "Libre",
+							}
+							cA.CambiarEstadoDis(context.Background(),&next_estado)
+							break
+						}else{
+							time.Sleep(time.Second * 3)
+						
+						}
+					}
+				}
+			}
 		}
 	}
 
 	return &Message{Body: "Se envio correctamente el chunk"}, nil
 }
-
 
 func propuestaDataNode(total int) Propuesta {
 	var lista1 []int
@@ -245,7 +411,43 @@ func propuesta(total int) Propuesta {
 	}
 	return respuesta
 }
+// Escritura log para Algoritmo Distribuido
+func (s *Server) EscribirLog(ctx context.Context, log *PropuestaRespuesta) (*Message, error) {
+	Titulo := log.Nombre
+	total := log.Total
+	file, err := os.OpenFile("log.txt", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
+	if err != nil {
+		fmt.Println(err)
+		return &Message{Body: "Error"}, nil
+	}
+	largo1, err := strconv.Atoi(log.Intn1)
+	largo2, err := strconv.Atoi(log.Intn2)
+	largo3, err := strconv.Atoi(log.Intn3)
+	listan1 := strings.SplitN(log.Nd1, "@", largo1)
+	listan2 := strings.SplitN(log.Nd2, "@", largo2)
+	listan3 := strings.SplitN(log.Nd3, "@", largo3)
+	if err != nil {
+		fmt.Println(err)
+		return &Message{Body: "Error"}, nil
+	}
+	defer file.Close()
+	fmt.Fprintf(file, "%s %s\n", Titulo, total)
 
+	for i := 0; i < largo1; i++ {
+		fmt.Fprintf(file, "%s_%s %s\n", Titulo, listan1[i], "dist137:9001")
+	}
+
+	for i := 0; i < largo2; i++ {
+		fmt.Fprintf(file, "%s_%s %s\n", Titulo, listan2[i], "dist138:9002")
+	}
+
+	for i := 0; i < largo3; i++ {
+		fmt.Fprintf(file, "%s_%s %s\n", Titulo, listan3[i], "dist139:9003")
+	}
+
+	fmt.Fprintf(file, "\n")
+	return &Message{Body: "Chunk agregados al log.txt"}, nil
+}
 
 //escribirLog escribe el archivo
 func escribirLog(log PropuestaRespuesta) {
@@ -285,11 +487,22 @@ func escribirLog(log PropuestaRespuesta) {
 }
 
 
+func (s *Server) EnviarPropuestaDN(ctx context.Context, prop *PropuestaRespuesta) (*Message, error){
+	rand.Seed(time.Now().UnixNano())
+	rdnum := rand.Intn(100 - 0 + 1) + 1
+	if rdnum > 10 {
+		return &Message{Body: "Aceptada"}, nil
+	}else{
+		return &Message{Body: "Rechazada"}, nil
+	}
+		
+}
+
 func (s *Server) AceptarPropuesta(ctx context.Context, message *PropuestaRespuesta) (*PropuestaRespuesta, error) {
 	flag1 := true
 	flag2 := true
 	flag3 := true
-
+	s.mux.Lock()
 	var conn1 *grpc.ClientConn
 	conn1, err1 := grpc.Dial("dist137:9001", grpc.WithInsecure())
 	if err1 != nil {
@@ -390,6 +603,7 @@ func (s *Server) AceptarPropuesta(ctx context.Context, message *PropuestaRespues
 	fmt.Println(respuesta.Nd2)
 	fmt.Println(respuesta.Nd3)
 	escribirLog(respuesta)
+	s.mux.Unlock()
 	return &respuesta, nil
 }
 
@@ -674,7 +888,7 @@ func (s *Server) TraerChunk(ctx context.Context, message *Message) (*Message, er
 		Parte: parte,
 		NumPartes: 1,
 		Buffer: chunkBufferBytes,
-		Port: ":9000",
+		Port: "dist140:9000",
 		Algo: "",
 	}
 
@@ -688,6 +902,13 @@ func (s *Server) Estado(ctx context.Context, message *Message) (*Message, error)
 	return &Message{Body: "Up"}, nil
 }
 
-func AlgoritmoDistribuido() {
-
+func (s *Server) CambiarEstadoDis(ctx context.Context, message *Message) (*Message, error) {
+	s.estado = message.Body
+	return &Message{Body: "Cambio de estado a " + message.Body}, nil
 }
+
+func (s *Server) VerEstadoDis(ctx context.Context, message *Message) (*Message, error) {
+	estado_actual := s.estado
+	return &Message{Body: estado_actual}, nil
+}
+

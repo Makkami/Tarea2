@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"fmt"
+	"context"
 
 	"github.com/Makkami/Tarea2/chat"
 	"google.golang.org/grpc"
@@ -19,7 +20,10 @@ func main() {
 	}
 
 	s2 := chat.Server{}
-
+	estado := chat.Message {
+		Body: "Libre",
+	}
+	s2.CambiarEstadoDis(context.Background(), &estado)
 	grpcServer := grpc.NewServer()
 
 	chat.RegisterChatServiceServer(grpcServer, &s2)
