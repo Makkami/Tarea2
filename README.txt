@@ -12,10 +12,11 @@ Distribucion de los archivos:
  Los archivos se encuentran en la carpeta "Tarea2"
 --------------------------------------------
 Los archivos deben ejecutarse en la carpeta "Tarea2" en el siguiente orden para su funcionamiento:
-  1. Ejecutar el comando "make" en la maquina dist140 para iniciar el Name Node y el Cliente(Uploader y Downloader)
-  2  Ejecutar el comando "make" en la maquina dist137 para iniciar el Data Node 1
-  3. Ejecutar el comando "make" en la maquina dist138 para iniciar el Data Node 2
-  4. Ejecutar el comando "make" en la maquina dist139 para iniciar el Data Node 3
+  1. Ejecutar el comando "make cliente" en la maquina dist140 para iniciar Cliente(Uploader y Downloader)
+  2. Ejecutar el comando "make namenode" en la maquina dist140 para iniciar el Name Node
+  3. Ejecutar el comando "make" en la maquina dist137 para iniciar el Data Node 1
+  4. Ejecutar el comando "make" en la maquina dist138 para iniciar el Data Node 2
+  5. Ejecutar el comando "make" en la maquina dist139 para iniciar el Data Node 3
 --------------------------------------------
 Notas:
 -El nombre de los PDFs que se desean subir no pueden incluir un "_" en su nombre.
